@@ -1,0 +1,135 @@
+version: "3.8"
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:${CP_TAG}
+    hostname: zookeeper
+    container_name: zookeeper
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  broker1:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker1
+    container_name: broker1
+    restart: always
+    ports:
+      - "9091:9091"
+      - "29091:29091"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9091,PLAINTEXT_HOST://:29091
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker1:9091,PLAINTEXT_HOST://localhost:29091
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+  broker2:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker2
+    container_name: broker2
+    restart: always
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9092,PLAINTEXT_HOST://:29092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker2:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+  broker3:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker3
+    container_name: broker3
+    restart: always
+    ports:
+      - "9093:9093"
+      - "29093:29093"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9093,PLAINTEXT_HOST://:29093
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker3:9093,PLAINTEXT_HOST://localhost:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+
+## Second Cluster below
+
+  zookeeper2:
+    image: confluentinc/cp-zookeeper:${CP_TAG}
+    hostname: zookeeper2
+    container_name: zookeeper2
+    restart: always
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_TICK_TIME: 2000
+  broker4:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker4
+    container_name: broker4
+    restart: always
+    ports:
+      - "9094:9094"
+      - "29094:29094"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper2:2182'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9094,PLAINTEXT_HOST://:29094
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker4:9094,PLAINTEXT_HOST://localhost:29094
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+  broker5:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker5
+    container_name: broker5
+    restart: always
+    ports:
+      - "9095:9095"
+      - "29095:29095"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper2:2182'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9095,PLAINTEXT_HOST://:29095
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker5:9095,PLAINTEXT_HOST://localhost:29095
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+  broker6:
+    image: confluentinc/cp-server:${CP_TAG}
+    hostname: broker6
+    container_name: broker6
+    restart: always
+    ports:
+      - "9096:9096"
+      - "29096:29096"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper2:2182'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: BROKER://:9096,PLAINTEXT_HOST://:29096
+      KAFKA_ADVERTISED_LISTENERS: BROKER://broker6:9096,PLAINTEXT_HOST://localhost:29096
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
+      KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
+      KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
