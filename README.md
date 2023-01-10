@@ -33,6 +33,34 @@ get /brokers/ids/1
 
 ### Attempt to link the clusters
 
+Get the IDs for both clusters
+
+```bash
+docker-compose exec broker1 kafka-cluster cluster-id --bootstrap-server broker1:9091
+```
+
+You should see something like:
+```
+Cluster ID: YTAd13fGSziks7O0NRs2QA
+```
+
+```bash
+docker-compose exec broker4 kafka-cluster cluster-id --bootstrap-server broker4:9094
+```
+
+You should see:
+
+```
+Cluster ID: 3vcAUrrvSCqPDykFsSIhfg
+```
+
+```bash
+kafka-cluster-links --bootstrap-server localhost:9093 \
+                       --create \
+                       --link example-link \
+                       --config-file example-link.config
+```
+
 
 
 
