@@ -223,6 +223,8 @@ Copy the properties file over to `broker4`:
 docker cp ./consumer.properties broker4:/tmp
 ```
 
+Then run `kafka-console-consumer` on broker4 and specify the mirror topic:
+
 ```bash
 docker-compose exec broker4 kafka-console-consumer --bootstrap-server broker4:9094 --consumer.config /tmp/consumer.properties --from-beginning --topic demo-perf-topic
 ```
