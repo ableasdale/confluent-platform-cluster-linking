@@ -94,7 +94,7 @@ get /brokers/ids/1
 {"features":{},"listener_security_protocol_map":{"BROKER":"PLAINTEXT","PLAINTEXT_HOST":"PLAINTEXT"},"endpoints":["BROKER://broker4:9094","PLAINTEXT_HOST://localhost:29094"],"jmx_port":-1,"port":9094,"host":"broker4","version":5,"tags":{},"timestamp":"1673382714368"}
 ```
 
-### Get the IDs for both clusters
+## Get the IDs for both clusters
 
 While this information was exposed by `zookeeper-shell`, this can also be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster):
 
@@ -118,7 +118,7 @@ You should see:
 Cluster ID: 3vcAUrrvSCqPDykFsSIhfg
 ```
 
-### Attempt to link the clusters
+## Attempt to establish the link between both clusters
 
 Create a file called `link-config.properties` containing the following properties (note this file is also in the repository for reference):
 
@@ -134,7 +134,7 @@ Copy the file to broker1:
 docker cp ./link-config.properties broker1:/tmp
 ```
 
-Create the Cluster Link:
+Create the Cluster Link from `broker1` (the first cluster) and pass in the `cluster-id` of the first cluster, specifying the `bootstrap-server` of the second cluster:
 
 ```bash
 docker-compose exec broker1 kafka-cluster-links --bootstrap-server broker4:9094 --create --link ab-link --config-file /tmp/link-config.properties --cluster-id YTAd13fGSziks7O0NRs2QA
@@ -144,15 +144,17 @@ docker-compose exec broker1 kafka-cluster-links --bootstrap-server broker4:9094 
 Cluster link 'ab-link' creation successfully completed.
 ```
 
-IT WORKS! :)
+Now the link has been established, we can test to ensure everything looks okay.
 
-### show it
+## Confirm that the Cluster Link is working as expected
+
+You can run `kafka-cluster-links` and pass in the `--list` parameter to get a list of available Cluster Links:
 
 ```bash
 docker-compose exec broker1 kafka-cluster-links --list --bootstrap-server broker4:9094 
 ```
 
-you will see:
+You will see output similar to this:
 
 ```
 Link name: 'ab-link', link ID: 'XFdTSdXuTN6jULmLNrAuzQ', remote cluster ID: 'YTAd13fGSziks7O0NRs2QA', local cluster ID: '3vcAUrrvSCqPDykFsSIhfg', remote cluster available: 'true'
@@ -164,14 +166,14 @@ docker-compose exec broker1 kafka-configs --bootstrap-server broker4:9094 \
                   --cluster-link ab-link
 ```
 
-you will see:
+You will see:
 
 ```
 Dynamic configs for cluster-link ab-link are:
   sasl.oauthbearer.token.endpoint.url=null sensitive=false synonyms={}
 ```
 
-### Create Source and Destination topics and mirror them
+## Create a topic on the Source cluster and establish a mirror topic on the destination
 
 Let's start by creating a topic on the source:
 
@@ -185,7 +187,7 @@ You should see:
 Created topic demo-perf-topic.
 ```
 
-Mirror it:
+Now let's establish the mirror of the topic on the destination cluster using the `kafka-mirrors` comand:
 
 ```bash
 docker-compose exec broker1 kafka-mirrors --create --mirror-topic demo-perf-topic \
@@ -199,19 +201,23 @@ You should see:
 Created topic demo-perf-topic.
 ```
 
-### Produce to the first cluster; Consume from the mirror on the second cluster
+## Produce to the first cluster; Consume from the mirror on the second cluster
 
-Start a console producer:
+We are going to start a `kafka-console-producer` on the first cluster to create some messages:
 
 ```bash
 docker-compose exec broker1 kafka-console-producer --bootstrap-server broker1:9091 --topic demo-perf-topic
 ```
 
-Start a consumer on the second cluster
+In a separate terminal tab, let's start a consumer on the second cluster
 
-Create a properties file `consumer.properties`:
+Create a properties file `consumer.properties` or use the one in the repository:
 
+```properties
+sasl.mechanism=PLAIN
 ```
+
+Copy the properties file over to `broker4`:
 
 ```bash
 docker cp ./consumer.properties broker4:/tmp
@@ -221,36 +227,6 @@ docker cp ./consumer.properties broker4:/tmp
 docker-compose exec broker4 kafka-console-consumer --bootstrap-server broker4:9094 --consumer.config /tmp/consumer.properties --from-beginning --topic demo-perf-topic
 ```
 
-Confirm that any messages produced to cluster 1 can be read from the mirror topic.
+Confirm that any messages produced to the first cluster can be read from the consumer running against the mirror topic:
 
-
-----
-
-cruft below --
-
-echo ruok | nc zookeeper 2181
-
-docker-compose exec zookeeper-dc1 zookeeper-shell localhost:2181 get /cluster/id | grep version | grep id | jq -r .id
-
-confluent kafka link create my-link --cluster <destination id> \
-    --source-cluster-id <source id> \
-    --source-bootstrap-server <source bootstrap server> \
-    --source-api-key <key> --source-api-secret <secret>
-
-docker-compose exec broker1 kafka-cluster-links --bootstrap-server broker4:9094 \
---create \
---link my-link \
---cluster-id YTAd13fGSziks7O0NRs2QA
-
-```bash
-kafka-cluster-links --bootstrap-server localhost:9093 \
-                       --create \
-                       --link example-link \
-                       --config-file example-link.config
-```
-
-kafka-console-consumer \
-  --bootstrap-server <cluster id>.us-west-2.aws.confluent.cloud:9092 \
-  --consumer.config audit-cluster.properties \
-  --topic confluent-audit-log-events \
-  --from-beginning 
+![Output from both the primary and secondary cluster](example.png)
