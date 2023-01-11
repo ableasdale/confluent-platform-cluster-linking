@@ -96,7 +96,9 @@ get /brokers/ids/1
 
 ## Get the IDs for both clusters
 
-While this information was exposed by `zookeeper-shell`, this can also be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster):
+While this information was exposed by `zookeeper-shell`, this can also be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster).
+
+Let's start with broker1 (the first cluster):
 
 ```bash
 docker-compose exec broker1 kafka-cluster cluster-id --bootstrap-server broker1:9091
@@ -108,6 +110,8 @@ You should see something like:
 Cluster ID: YTAd13fGSziks7O0NRs2QA
 ```
 
+We will perform the same test with broker4 (the second cluster):
+
 ```bash
 docker-compose exec broker4 kafka-cluster cluster-id --bootstrap-server broker4:9094
 ```
@@ -118,17 +122,16 @@ You should see:
 Cluster ID: 3vcAUrrvSCqPDykFsSIhfg
 ```
 
-## Attempt to establish the link between both clusters
+## Establish the Cluster Link between both clusters
 
-Create a file called `link-config.properties` containing the following properties (note this file is also in the repository for reference):
+Create a file called `link-config.properties` containing the following properties (note that this file is also in the repository for reference):
 
 ```
 bootstrap.servers=broker1:9091,broker2:9092,broker3:9093
 sasl.mechanism=PLAIN
-ssl.endpoint.identification.algorithm=http
 ```
 
-Copy the file to broker1:
+Copy the `link-config.properties` to broker1:
 
 ```bash
 docker cp ./link-config.properties broker1:/tmp
