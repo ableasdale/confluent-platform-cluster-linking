@@ -4,6 +4,8 @@ A project to demonstrate Cluster Linking Between two clusters running Confluent 
 
 The project will set up two 3-broker Kafka Clusters, each with a separate Zookeeper instance.
 
+## Starting the Clusters
+
 Start both clusters using the provided `docker-compose.yaml` file:
 
 ```bash
@@ -24,7 +26,9 @@ bbbc139dc710   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 h
 094e477623e4   confluentinc/cp-zookeeper:7.3.1   "/etc/confluent/dock…"   13 hours ago   Up 13 hours   2181/tcp, 2888/tcp, 3888/tcp                                 zookeeper2
 ```
 
-### Ensure everything is working and started correctly
+## Ensuring everything is working and has started correctly
+
+### Checking the first cluster
 
 We can quickly check the status of each cluster using `zookeeper-shell` on the first cluster:
 
@@ -57,7 +61,9 @@ get /brokers/ids/1
 {"features":{},"listener_security_protocol_map":{"BROKER":"PLAINTEXT","PLAINTEXT_HOST":"PLAINTEXT"},"endpoints":["BROKER://broker1:9091","PLAINTEXT_HOST://localhost:29091"],"jmx_port":-1,"port":9091,"host":"broker1","version":5,"tags":{},"timestamp":"1673382717473"}
 ```
 
-Now let's try to connect to Zookeeper instance on the other cluster using `zookeeper-shell`:
+### Checking the second cluster
+
+Now let's try to connect to Zookeeper instance on the second cluster using `zookeeper-shell`:
 
 ```bash
 docker-compose exec zookeeper2 zookeeper-shell localhost:2182
@@ -74,6 +80,11 @@ get /controller
 ```
 
 ```
+get /cluster/id
+{"version":"1","id":"3vcAUrrvSCqPDykFsSIhfg"}
+```
+
+```
 ls /brokers/ids
 [1, 2, 3]
 ```
@@ -85,13 +96,14 @@ get /brokers/ids/1
 
 ### Get the IDs for both clusters
 
-This will be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster):
+While this information was exposed by `zookeeper-shell`, this can also be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster):
 
 ```bash
 docker-compose exec broker1 kafka-cluster cluster-id --bootstrap-server broker1:9091
 ```
 
 You should see something like:
+
 ```
 Cluster ID: YTAd13fGSziks7O0NRs2QA
 ```
@@ -108,7 +120,7 @@ Cluster ID: 3vcAUrrvSCqPDykFsSIhfg
 
 ### Attempt to link the clusters
 
-Create a file called `link-config.properties`:
+Create a file called `link-config.properties` containing the following properties (note this file is also in the repository for reference):
 
 ```
 bootstrap.servers=broker1:9091,broker2:9092,broker3:9093
