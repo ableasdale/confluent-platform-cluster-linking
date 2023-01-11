@@ -1,5 +1,32 @@
-# confluent-platform-cluster-linking
-Demonstrating Cluster Linking Between two clusters running Confluent Platform 
+# Confluent Platform Cluster Linking 
+
+A project to demonstrate Cluster Linking Between two clusters running Confluent Platform (7.3.1).
+
+The project will set up two 3-broker Kafka Clusters, each with a separate Zookeeper instance.
+
+Start both clusters using the provided `docker-compose.yaml` file:
+
+```bash
+docker-compose up
+```
+
+If everything has run successfully, you should see 6 Brokers and 2 Zookeeper instances in the output to `docker ps`:
+
+```
+CONTAINER ID   IMAGE                             COMMAND                  CREATED        STATUS        PORTS                                                        NAMES
+1ab2925ae4d5   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9096->9096/tcp, 9092/tcp, 0.0.0.0:29096->29096/tcp   broker6
+6c20fad4ae81   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9091->9091/tcp, 0.0.0.0:29091->29091/tcp, 9092/tcp   broker1
+2143cf399f74   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9092->9092/tcp, 0.0.0.0:29092->29092/tcp             broker2
+091b97e31b3b   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9094->9094/tcp, 9092/tcp, 0.0.0.0:29094->29094/tcp   broker4
+bbbc139dc710   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9093->9093/tcp, 9092/tcp, 0.0.0.0:29093->29093/tcp   broker3
+7401437afae7   confluentinc/cp-zookeeper:7.3.1   "/etc/confluent/dock…"   13 hours ago   Up 13 hours   2181/tcp, 2888/tcp, 3888/tcp                                 zookeeper
+2a7b836bc370   confluentinc/cp-server:7.3.1      "/etc/confluent/dock…"   13 hours ago   Up 13 hours   0.0.0.0:9095->9095/tcp, 9092/tcp, 0.0.0.0:29095->29095/tcp   broker5
+094e477623e4   confluentinc/cp-zookeeper:7.3.1   "/etc/confluent/dock…"   13 hours ago   Up 13 hours   2181/tcp, 2888/tcp, 3888/tcp                                 zookeeper2
+```
+
+### Ensure everything is working and started correctly
+
+We can quickly check the status of each cluster using `zookeeper-shell` on the first cluster:
 
 ```bash
 docker-compose exec zookeeper zookeeper-shell localhost:2181
@@ -7,14 +34,30 @@ docker-compose exec zookeeper zookeeper-shell localhost:2181
 
 ```
 ls /
+[admin, brokers, cluster, config, consumers, controller, controller_epoch, feature, isr_change_notification, latest_producer_id_block, leadership_priority, log_dir_event_notification, zookeeper]
+```
+
+```
 get /controller
 {"version":1,"brokerid":2,"timestamp":"1673382716473"}
+```
+
+```
+get /cluster/id
+{"version":"1","id":"YTAd13fGSziks7O0NRs2QA"}
+```
+
+```
 ls /brokers/ids
+[1, 2, 3]
+```
+
+```
 get /brokers/ids/1
 {"features":{},"listener_security_protocol_map":{"BROKER":"PLAINTEXT","PLAINTEXT_HOST":"PLAINTEXT"},"endpoints":["BROKER://broker1:9091","PLAINTEXT_HOST://localhost:29091"],"jmx_port":-1,"port":9091,"host":"broker1","version":5,"tags":{},"timestamp":"1673382717473"}
 ```
 
-Try to connect to Zk on the other cluster
+Now let's try to connect to Zookeeper instance on the other cluster using `zookeeper-shell`:
 
 ```bash
 docker-compose exec zookeeper2 zookeeper-shell localhost:2182
@@ -23,15 +66,26 @@ docker-compose exec zookeeper2 zookeeper-shell localhost:2182
 ```
 ls /
 [admin, brokers, cluster, config, consumers, controller, controller_epoch, feature, isr_change_notification, latest_producer_id_block, leadership_priority, log_dir_event_notification, zookeeper]
+```
+
+```
 get /controller
 {"version":1,"brokerid":3,"timestamp":"1673382712259"}
+```
+
+```
 ls /brokers/ids
 [1, 2, 3]
+```
+
+```
 get /brokers/ids/1
 {"features":{},"listener_security_protocol_map":{"BROKER":"PLAINTEXT","PLAINTEXT_HOST":"PLAINTEXT"},"endpoints":["BROKER://broker4:9094","PLAINTEXT_HOST://localhost:29094"],"jmx_port":-1,"port":9094,"host":"broker4","version":5,"tags":{},"timestamp":"1673382714368"}
 ```
 
 ### Get the IDs for both clusters
+
+This will be done by issuing the `kafka-cluster cluster-id` command against broker1 (of the first cluster) and broker4 (of the second cluster):
 
 ```bash
 docker-compose exec broker1 kafka-cluster cluster-id --bootstrap-server broker1:9091
