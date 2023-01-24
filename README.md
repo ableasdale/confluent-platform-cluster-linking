@@ -235,3 +235,9 @@ docker-compose exec broker4 kafka-console-consumer --bootstrap-server broker4:90
 Confirm that any messages produced to the first cluster can be read from the consumer running against the mirror topic:
 
 ![Output from both the primary and secondary cluster](example.png)
+
+## Further Reading
+
+- https://docs.confluent.io/platform/current/multi-dc-deployments/cluster-linking/migrate-cp.html
+- https://docs.confluent.io/cloud/current/multi-cloud/cluster-linking/index.html#share-data-with-cluster-linking-on-ccloud
+- https://docs.confluent.io/platform/current/multi-dc-deployments/cluster-linking/mirror-topics-cp.html#mirror-topics-for-cluster-linking
