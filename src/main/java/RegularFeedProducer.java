@@ -5,12 +5,29 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.Properties;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 
 public class RegularFeedProducer {
+
+    /**
+     * Setup steps
+     *
+     * docker-compose exec broker1 kafka-cluster cluster-id --bootstrap-server broker1:9091
+     * docker-compose exec broker4 kafka-cluster cluster-id --bootstrap-server broker4:9094
+     * docker cp ./link-config.properties broker1:/tmp
+     * docker-compose exec broker1 kafka-cluster-links --bootstrap-server broker4:9094 --create --link ab-link --config-file /tmp/link-config.properties --cluster-id <id for first broker>
+     * docker-compose exec broker1 kafka-cluster-links --list --bootstrap-server broker4:9094
+     * docker exec -it broker1 /bin/bash -c 'kafka-topics --bootstrap-server broker1:9091 --topic demo-perf-topic --replication-factor 3 --partitions 6 --create --config min.insync.replicas=2'
+     * docker-compose exec broker1 kafka-mirrors --create --mirror-topic demo-perf-topic --link ab-link --bootstrap-server broker4:9094
+     *
+     * Then run the application `gradle run`
+     *
+     * (then take out the second cluster)
+     */
 
     private static Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -21,14 +38,14 @@ public class RegularFeedProducer {
         props.put("bootstrap.servers", "localhost:29091");
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-        final String topic = "data-topic";
+        final String topic = "demo-perf-topic";
         Producer<String, String> producer = new KafkaProducer<>(props);
-        String key = "test";
 
         // Send a message every 10 seconds indefinitely ...
 
         while (true) {
             Thread.sleep(10000);
+            String key = "test-"+ ThreadLocalRandom.current().nextInt(0, 12 + 1);;
             String unixTimestamp = String.valueOf(Instant.now().getEpochSecond());
 
             producer.send(
