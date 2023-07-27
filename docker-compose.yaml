@@ -14,6 +14,7 @@ services:
     container_name: broker1
     restart: always
     ports:
+      - "8090:8090"
       - "9091:9091"
       - "29091:29091"
     environment:
@@ -27,12 +28,21 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker1:9091
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      KAFKA_REST_ADVERTISED_LISTENERS: http://localhost:8090
+      #       CONNECT_PRODUCER_CONFLUENT_MONITORING_INTERCEPTOR_BOOTSTRAP_SERVERS: "kafka-control-center:9094"
+      # CONNECT_CONSUMER_CONFLUENT_MONITORING_INTERCEPTOR_BOOTSTRAP_SERVERS: "kafka-control-center:9094"
   broker2:
     image: confluentinc/cp-server:${CP_TAG}
     hostname: broker2
     container_name: broker2
     restart: always
     ports:
+      - "8091:8091"
       - "9092:9092"
       - "29092:29092"
     environment:
@@ -46,12 +56,19 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker2:9092
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      KAFKA_REST_ADVERTISED_LISTENERS: http://localhost:8091
   broker3:
     image: confluentinc/cp-server:${CP_TAG}
     hostname: broker3
     container_name: broker3
     restart: always
     ports:
+      - "8092:8092"
       - "9093:9093"
       - "29093:29093"
     environment:
@@ -65,6 +82,29 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker3:9093
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      CONFLUENT_METRICS_ENABLE: 'true'
+      CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      KAFKA_REST_ADVERTISED_LISTENERS: http://localhost:8092
+  #control-center:
+  #  image: confluentinc/cp-enterprise-control-center:${CP_TAG}
+  #  hostname: control-center
+  #  container_name: control-center
+  #  depends_on:
+  #    - zookeeper
+  #    - broker1
+  #    - broker2
+  #    - broker3
+  #  ports:
+  #    - "9021:9021"
+  #  environment:
+  #    CONTROL_CENTER_BOOTSTRAP_SERVERS: 'broker1:9091,broker2:9092,broker3:9093'
+# ,broker4:9094,broker5:9095,broker6:9096'q
+  #    CONTROL_CENTER_REPLICATION_FACTOR: 3
+      #CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS: "5"
+  #    CONTROL_CENTER_STREAMS_CPREST_URL: "http://broker1:8090,http://broker2:8091,http://broker3:8092"
 
 ## Second Cluster below
 
@@ -72,7 +112,6 @@ services:
     image: confluentinc/cp-zookeeper:${CP_TAG}
     hostname: zookeeper2
     container_name: zookeeper2
-    restart: always
     environment:
       ZOOKEEPER_CLIENT_PORT: 2182
       ZOOKEEPER_TICK_TIME: 2000
@@ -95,6 +134,13 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      #KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      #KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker4:9094
+      #CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      #CONFLUENT_METRICS_ENABLE: 'true'
+      #CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      #CONFLUENT_CONTROLCENTER_KAFKA_TWO_BOOTSTRAP_SERVERS: broker4:9094
+      #onfluent.controlcenter.kafka.<name>.bootstrap.servers
   broker5:
     image: confluentinc/cp-server:${CP_TAG}
     hostname: broker5
@@ -114,6 +160,12 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      #KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      #KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker5:9095
+      #CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      #CONFLUENT_METRICS_ENABLE: 'true'
+      #CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      #CONFLUENT_CONTROLCENTER_KAFKA_TWO_BOOTSTRAP_SERVERS: broker5:9095
   broker6:
     image: confluentinc/cp-server:${CP_TAG}
     hostname: broker6
@@ -133,3 +185,9 @@ services:
       KAFKA_CONFLUENT_METRICS_ENABLE: 'false'
       KAFKA_CONFLUENT_REPORTERS_TELEMETRY_AUTO_ENABLE: 'false'
       KAFKA_CONFLUENT_BALANCER_ENABLE: 'false'
+      #KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      #KAFKA_CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker6:9096
+      #CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 3
+      #CONFLUENT_METRICS_ENABLE: 'true'
+      #CONFLUENT_METRICS_REPORTER_TOPIC_CREATE: 'true'
+      #CONFLUENT_CONTROLCENTER_KAFKA_TWO_BOOTSTRAP_SERVERS: broker6:9096
